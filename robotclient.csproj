@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- <PackageReference>Newtonsoft</PackageReference> -->
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Debug</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Newtonsoft.Json.12.0.1\.signature.p7s" />
+    <None Remove="Newtonsoft.Json.12.0.1\LICENSE.md" />
+    <None Remove="Newtonsoft.Json.12.0.1\Newtonsoft.Json.12.0.1.nupkg" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net35\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net35\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net35\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net40\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net40\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net40\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.0\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.0\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.0\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.3\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.3\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard1.3\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard2.0\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard2.0\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\netstandard2.0\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net40+sl5+win8+wp8+wpa81\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net40+sl5+win8+wp8+wpa81\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net40+sl5+win8+wp8+wpa81\Newtonsoft.Json.xml" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net45+win8+wp8+wpa81\Newtonsoft.Json.dll" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net45+win8+wp8+wpa81\Newtonsoft.Json.pdb" />
+    <None Remove="Newtonsoft.Json.12.0.1\lib\portable-net45+win8+wp8+wpa81\Newtonsoft.Json.xml" />
+  </ItemGroup>
+</Project>
