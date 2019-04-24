@@ -6,16 +6,24 @@ using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 
 namespace robotclient {
+
+    /// <summary>
+    /// 服务器信息
+    /// </summary>
     class ServerInfo {
 
         //机械臂IP地址
-        const string robotIP = "192.168.65.138";
+        public const string robotIP = "192.168.80.198";
         //机械臂端口号
-        const int serverPort = 8899;
+        public const int serverPort = 8899;
         //机械臂web服务器地址
         public const string SERVER_URL = "http://localhost:8080/";
 
     }
+
+    /// <summary>
+    /// 全局通用配置类
+    /// </summary>
     class Util {
         public const int RSERR_SUCC = 0;
         //关节个数
@@ -166,7 +174,11 @@ namespace robotclient {
 
     }
 
+    /// <summary>
+    /// 机械臂控制元数据类
+    /// </summary>
     class MetaData {
+        //坐标系标定方法索引值
         public enum CoordMethodIndex {
             xOy = 0, // 原点、x轴正半轴、y轴正半轴
             yOz, // 原点、y轴正半轴、z轴正半轴
@@ -179,9 +191,26 @@ namespace robotclient {
             zOzy // 原点、z轴正半轴、z、y轴平面的第一象限上任意一点
         }
 
-        //路点位置信息的表示方法
-        [StructLayout (LayoutKind.Sequential)]
-        public struct Pos {
+        //示教接口运动模式
+        public enum TeachMode {
+            NO_TEACH = 0,
+            JOINT1, //轴动示教
+            JOINT2,
+            JOINT3,
+            JOINT4,
+            JOINT5,
+            JOINT6,
+            MOV_X, //位置示教
+            MOV_Y,
+            MOV_Z,
+            ROT_X, //姿态示教
+            ROT_Y,
+            ROT_Z
+            };
+
+            //路点位置信息的表示方法
+            [StructLayout (LayoutKind.Sequential)]
+            public struct Pos {
             public double x;
             public double y;
             public double z;
@@ -310,6 +339,10 @@ namespace robotclient {
             public IntPtr eventContent; //事件内容(std::string)
         };
     }
+
+    /// <summary>
+    /// 机械臂控制适配器类
+    /// </summary>
 
     class RobotAdepter {
         public RobotAdepter () {
@@ -480,6 +513,18 @@ namespace robotclient {
         [DllImport (Robot_Library, EntryPoint = "rs_move_joint_to", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
         public static extern int rs_move_joint_to (UInt16 rshd, ref MetaData.Pos target, ref MetaData.ToolInEndDesc tool, bool isblock);
 
+        //设置示教坐标系
+        [DllImport (Robot_Library, EntryPoint = "rs_set_teach_coord", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int rs_set_teach_coord (UInt16 rshd, ref MetaData.CoordCalibrate user_coord);
+
+        //开始轴动示教 mode 示教关节:JOINT1~6,   位置示教:MOV_X,MOV_Y,MOV_Z   姿态示教:ROT_X,ROT_Y,ROT_Z  dir 运动方向 正方向true 反方向false
+        [DllImport (Robot_Library, EntryPoint = "rs_teach_move_start", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int rs_teach_move_start (UInt16 rshd, MetaData.TeachMode teach_mode, bool dir);
+
+        //结束示教
+        [DllImport (Robot_Library, EntryPoint = "rs_teach_move_stop", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int rs_teach_move_stop (UInt16 rshd);
+
         //获取机械臂当前位置信息
         [DllImport (Robot_Library, EntryPoint = "rs_get_current_waypoint", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Cdecl)]
         public static extern int rs_get_current_waypoint (UInt16 rshd, ref MetaData.wayPoint_S waypoint);
@@ -640,7 +685,7 @@ namespace robotclient {
         }
 
         //打印路点信息
-        static void PrintWaypoint (MetaData.wayPoint_S point) {
+        public static void PrintWaypoint (MetaData.wayPoint_S point) {
             Console.Out.WriteLine ("---------------------------------------------------------------------------------------");
             Console.Out.WriteLine ("pos.x={0} y={1} z={2}", point.cartPos.x, point.cartPos.y, point.cartPos.z);
             Console.Out.WriteLine ("ori.w={0} x={1} y={2} z={3}", point.orientation.w, point.orientation.x, point.orientation.y, point.orientation.z);
@@ -649,7 +694,7 @@ namespace robotclient {
             Console.Out.WriteLine ("---------------------------------------------------------------------------------------");
         }
 
-        static void RobotEventCallback (ref MetaData.RobotEventInfo rs_event, IntPtr arg) {
+        public static void RobotEventCallback (ref MetaData.RobotEventInfo rs_event, IntPtr arg) {
             Console.Out.WriteLine ("---------------------------------------------------------------------------------------");
             Console.Out.WriteLine ("robot event.type={0}", rs_event.eventType);
             Console.Out.WriteLine ("robot event.eventCode={0}", rs_event.eventCode);
@@ -657,6 +702,11 @@ namespace robotclient {
             Console.Out.WriteLine ("---------------------------------------------------------------------------------------");
         }
 
+        /// <summary>
+        /// http get方法调用
+        /// </summary>
+        /// <param name="url">文本服务器地址</param>
+        /// <returns>http response</returns>
         static string HttpGet (string url) {
             string result = string.Empty;
             try {
@@ -674,6 +724,11 @@ namespace robotclient {
             return result;
         }
 
+        /// <summary>
+        /// 获取工具名称列表
+        /// </summary>
+        /// <param name="strServerUrl">机械臂接口服务器地址</param>
+        /// <param name="list">返回工具列表</param>
         public void GetToolNameList (string strServerUrl, out List<string> list) {
             string strURL = strServerUrl + "api/gettools";
             string data = HttpGet (strURL);
@@ -695,6 +750,11 @@ namespace robotclient {
             }
         }
 
+        /// <summary>
+        /// 获取坐标系名称列表
+        /// </summary>
+        /// <param name="strServerUrl">机械臂接口服务器地址</param>
+        /// <param name="list">返回用户坐标系名称列表</param>
         public void GetCoordNameList (string strServerUrl, out List<string> list) {
             string strURL = strServerUrl + "api/getcoords";
             string data = HttpGet (strURL);
@@ -716,6 +776,13 @@ namespace robotclient {
             }
         }
 
+        /// <summary>
+        /// 根据工具名称获取工具参数
+        /// </summary>
+        /// <param name="strServerUrl">机械臂接口服务器地址</param>
+        /// <param name="strToolName">工具名称</param>
+        /// <param name="robotTool">工具参数</param>
+        /// <returns>true成功 false失败</returns>
         public bool GetTool (string strServerUrl, string strToolName, out MetaData.ToolInEndDesc robotTool) {
             bool bfound = false;
             MetaData.Rpy rpy = new MetaData.Rpy ();
@@ -764,6 +831,13 @@ namespace robotclient {
             return bfound;
         }
 
+        /// <summary>
+        /// 获取用户坐标系参数
+        /// </summary>
+        /// <param name="strServerUrl">机械臂接口服务器地址</param>
+        /// <param name="strCoordName">用户坐标系名称</param>
+        /// <param name="coord">用户坐标系参数</param>
+        /// <returns>true成功 false失败</returns>
         public bool GetCoord (string strServerUrl, string strCoordName, ref MetaData.CoordCalibrate coord) {
             bool bfound = false;
             MetaData.Rpy rpy = new MetaData.Rpy ();
@@ -854,6 +928,8 @@ namespace robotclient {
             UInt16 rshd = 0xffff;
             //创建机械臂控制对象
             RobotAdepter robot = new RobotAdepter ();
+            MetaData.wayPoint_S waypoint = new MetaData.wayPoint_S ();
+            double[] target = { 0, 0, 0, 0, 0, 0 }; //注意这个里面的值是弧度！
 
             //获取所有工具名称列表
             List<string> toolNamelist;
@@ -880,7 +956,21 @@ namespace robotclient {
             //机械臂运动控制示例
             if (RobotAdepter.rs_create_context (ref rshd) == Util.RSERR_SUCC) {
                 Console.Out.WriteLine ("rshd={0}", rshd);
-                //other test...                
+                //链接机械臂服务器
+                if (RobotAdepter.rs_login (rshd, ServerInfo.robotIP, ServerInfo.serverPort) == Util.RSERR_SUCC) {
+                    Console.Out.WriteLine ("login succ.");
+
+                    //轴动到目标位置
+                    RobotAdepter.rs_move_joint (rshd, target, true);
+
+                    //直接获取机械臂当前位置信息
+                    RobotAdepter.rs_get_current_waypoint (rshd, ref waypoint);
+                    //打印路点信息
+                    RobotAdepter.PrintWaypoint (waypoint);
+
+                    RobotAdepter.rs_logout (rshd);
+                }
+
             }
         }
     }
