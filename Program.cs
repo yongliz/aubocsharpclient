@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace robotclient {
@@ -960,8 +962,23 @@ namespace robotclient {
                 if (RobotAdepter.rs_login (rshd, ServerInfo.robotIP, ServerInfo.serverPort) == Util.RSERR_SUCC) {
                     Console.Out.WriteLine ("login succ.");
 
+                    target[0] = -0.000172 / 180 * Util.M_PI;
+                    target[1] = -7.291862 / 180 * Util.M_PI;
+                    target[2] = -75.694718 / 180 * Util.M_PI;
+                    target[3] = 21.596727 / 180 * Util.M_PI;
+                    target[4] = -89.999982 / 180 * Util.M_PI;
+                    target[5] = -0.00458 / 180 * Util.M_PI;
+
                     //轴动到目标位置
                     RobotAdepter.rs_move_joint (rshd, target, true);
+
+                    //示教轴动1关节1秒
+                    RobotAdepter.rs_teach_move_start (rshd, MetaData.TeachMode.JOINT1, true);
+
+                    Thread.Sleep (1 * 1000);
+
+                    //示教停止接口必须与上面的示教启动接口配对使用!!!
+                    RobotAdepter.rs_teach_move_stop (rshd);
 
                     //直接获取机械臂当前位置信息
                     RobotAdepter.rs_get_current_waypoint (rshd, ref waypoint);
